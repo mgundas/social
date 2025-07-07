@@ -25,7 +25,7 @@ export const Button = ({
   const safeColor = color as ColorKey;
   return (
     <button
-      className={`px-4 py-2 w-full transition-all rounded-sm focus:ring-3 ${colors[safeColor]} ${className}`}
+      className={`px-4 py-2 w-full transition-all rounded-sm focus:ring-3 cursor-pointer ${colors[safeColor]} ${className}`}
       onClick={onClick}
       type={type}
     >

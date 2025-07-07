@@ -20,7 +20,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [theme, setTheme] = useState<Theme>("light");
 
   useEffect(() => {
-    setTheme((localStorage.getItem("theme") as Theme) || "light");
+    setTheme((localStorage.getItem("theme") as Theme) || "dark");
   }, []);
 
   useEffect(() => {

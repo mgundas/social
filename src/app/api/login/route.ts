@@ -35,6 +35,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
   }
 
+  if (!user.verified) {
+    return NextResponse.json(
+      { error: "Please verify your email first." },
+      { status: 401 }
+    );
+  }
+
   // Create JWT  (userId + exp 15 min)
   const token = await new SignJWT({ sub: user._id.toString() })
     .setProtectedHeader({ alg: "HS256" })

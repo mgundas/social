@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import clientPromise from "../../lib/mongodb";
-import { hashPassword } from "../../lib/auth";
-import { rateLimit } from "../../lib/rateLimiter";
+import clientPromise from "@/app/lib/mongodb";
+import { hashPassword } from "@/app/lib/auth";
+import { rateLimit } from "@/app/lib/rateLimiter";
+import { sendVerificationEmail } from "@/app/lib/mailgun";
+import { SignJWT } from "jose";
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
@@ -38,11 +40,19 @@ export async function POST(request: NextRequest) {
   const hashedPassword = await hashPassword(password);
 
   // Save user
-  await users.insertOne({
+  const user = await users.insertOne({
     email,
     password: hashedPassword,
+    verified: false,
     createdAt: new Date(),
   });
+
+  const token = await new SignJWT({ sub: user.insertedId.toString(), type: "email_verification" })
+    .setProtectedHeader({ alg: "HS256" })
+    .setExpirationTime("30m")
+    .sign(new TextEncoder().encode(process.env.JWT_SECRET!));
+
+  await sendVerificationEmail(email, token);
 
   return NextResponse.json({ message: "User created" });
 }

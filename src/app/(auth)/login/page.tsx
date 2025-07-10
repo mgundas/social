@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/buttons/Buttons";
 import { FormInput } from "@/components/ui/inputs/Inputs";
 import Notification from "@/components/ui/forms/Notification";
+import { useAuth } from "@/context/AuthContext";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -11,28 +12,26 @@ export default function LoginPage() {
   const [message, setMessage] = useState("");
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { login } = useAuth();
 
   const verified = searchParams.get("verified");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const res = await fetch("/api/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
-
-    const data = await res.json();
-    if (res.ok) {
-      router.push("/dashboard");
-    } else {
-      setMessage(data.error || "Login failed.");
-    }
+    await login(email, password)
+      .then(() => {
+        setMessage("Login successful! Redirecting...");
+        router.push("/dashboard");
+        router.refresh();
+      })
+      .catch((err) => {
+        setMessage(err.message || "Login failed. Please try again.");
+      });
   }
 
   useEffect(() => {
     async function check() {
-      const res = await fetch("/api/me"); // You’ll create this below
+      const res = await fetch("/api/me");
       if (res.ok) router.push("/dashboard");
     }
     check();
@@ -69,7 +68,12 @@ export default function LoginPage() {
       </form>
       <hr className=" dark:text-white/20 text-black/20 w-2/3 my-4" />
       <h2 className="text-xl mb-4">New to PostPulse?</h2>
-      <Button onClick={(e) => router.push("/signup")} className="sm:w-2/3 w-full" color="blue" type="submit">
+      <Button
+        onClick={(e) => router.push("/signup")}
+        className="sm:w-2/3 w-full"
+        color="blue"
+        type="submit"
+      >
         Register Here
       </Button>
     </>

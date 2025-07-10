@@ -26,7 +26,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // 🔄 Fetch current user on first load
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -43,7 +42,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     fetchUser();
   }, []);
 
-  // 🚪 Login action
   const login = async (email: string, password: string) => {
     const res = await fetch("/api/login", {
       method: "POST",
@@ -52,11 +50,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     if (!res.ok) throw new Error("Login failed");
-    const { userId } = await res.json();
-    setUser({ id: userId, email }); // You can refine this with real data later
+    const meRes = await fetch("/api/me", { credentials: "include" });
+    if (!meRes.ok) throw new Error("Could not fetch user after login");
+
+    const meData = await meRes.json();
+    setUser({ id: meData.user, email: meData.email });
   };
 
-  // ❌ Logout action
   const logout = async () => {
     await fetch("/api/logout", { method: "POST" });
     setUser(null);

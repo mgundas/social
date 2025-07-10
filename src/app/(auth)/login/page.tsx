@@ -12,30 +12,24 @@ export default function LoginPage() {
   const [message, setMessage] = useState("");
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { login } = useAuth();
+  const { login, loading, user } = useAuth();
 
   const verified = searchParams.get("verified");
+
+  useEffect(() => {
+    if (!loading && user) router.push("/dashboard");
+  }, [user, loading]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     await login(email, password)
       .then(() => {
         setMessage("Login successful! Redirecting...");
-        router.push("/dashboard");
-        router.refresh();
       })
       .catch((err) => {
         setMessage(err.message || "Login failed. Please try again.");
       });
   }
-
-  useEffect(() => {
-    async function check() {
-      const res = await fetch("/api/me");
-      if (res.ok) router.push("/dashboard");
-    }
-    check();
-  }, []);
 
   return (
     <>

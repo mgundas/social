@@ -5,11 +5,19 @@ import { Button } from "@/components/ui/buttons/Buttons";
 import { FormInput } from "@/components/ui/inputs/Inputs";
 import Notification from "@/components/ui/forms/Notification";
 import { useAuth } from "@/context/AuthContext";
+import { v4 as uuid } from "uuid";
+
+type Message = {
+  id: string;
+  type: "success" | "error" | "warning";
+  text: string;
+};
+const MAX_TOASTS = 3;
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState<Message[]>([]);
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login, loading, user } = useAuth();
@@ -24,23 +32,28 @@ export default function LoginPage() {
     e.preventDefault();
     await login(email, password)
       .then(() => {
-        setMessage("Login successful! Redirecting...");
+        setMessages((prev) => {
+          const newMsg: Message = { id: uuid(), type: "success", text: "Login succeeded!" };
+          return [...prev.slice(-MAX_TOASTS + 1), newMsg];
+        });
       })
       .catch((err) => {
-        setMessage(err.message || "Login failed. Please try again.");
+        setMessages((prev) => {
+          const newMsg: Message = { id: uuid(), type: "error", text: `Login failed, please try again.` };
+          return [...prev.slice(-MAX_TOASTS + 1), newMsg];
+        });
       });
   }
 
   return (
     <>
       <h1 className="text-2xl mb-4">Welcome Back!</h1>
-      <p>{message}</p>
       <form
         onSubmit={handleSubmit}
         className="flex flex-col gap-2 w-full sm:w-2/3"
       >
         {verified && (
-          <Notification type="success">
+          <Notification type="success" onClose={() => {}}>
             Email verified! You can now log in.
           </Notification>
         )}
@@ -59,6 +72,17 @@ export default function LoginPage() {
         <Button color="pink" type="submit">
           Sign In
         </Button>
+        {messages.map((msg, index) => (
+          <Notification
+            key={index}
+            type={msg.type}
+            onClose={() =>
+              setMessages((prev) => prev.filter((m) => m.id !== msg.id))
+            }
+          >
+            {msg.text}
+          </Notification>
+        ))}
       </form>
       <hr className=" dark:text-white/20 text-black/20 w-2/3 my-4" />
       <h2 className="text-xl mb-4">New to PostPulse?</h2>

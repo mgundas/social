@@ -16,7 +16,7 @@ export default function ProfilePage() {
   const { user } = useAuth();
   const router = useRouter();
   const params = useParams();
-  const userIdFromURL = params.userId as string;name:
+  const userIdFromURL = params.userId as string;
 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [form, setForm] = useState<Profile>({ firstName: "", lastName: "", email: "" });

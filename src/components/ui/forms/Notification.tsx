@@ -4,6 +4,7 @@ import React, { useEffect, useRef } from "react";
 type NotificationProps = {
   children: React.ReactNode;
   type: "warning" | "error" | "success";
+  onClose: () => void;
 };
 
 const types = {
@@ -14,19 +15,19 @@ const types = {
 
 type TypeKey = keyof typeof types;
 
-const Notification = ({ children, type }: NotificationProps) => {
+const Notification = ({ children, type, onClose }: NotificationProps) => {
   const notifRef = useRef<HTMLDivElement>(null);
   const safeType = type as TypeKey;
 
   useEffect(() => {
-    /* const timer = setTimeout(() => {
-      notifRef.current?.classList.add("hidden");
+    const timer = setTimeout(() => {
+      onClose();
     }, 4000);
 
     return () => {
       clearTimeout(timer);
-    }; */
-  }, []);
+    };
+  }, [onClose]);
 
   return (
     <div
